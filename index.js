@@ -42,7 +42,9 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const coffeeColection = client.db('cofeeDB').collection('coffee')
+    const coffeeColection = client.db('coffeeDB').collection('coffee');
+
+    const userCollection = client.db('coffeeDB').collection('user');
 
 
     app.get('/coffee', async (req, res) => {
@@ -90,6 +92,42 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await coffeeColection.deleteOne(query);
+      res.send(result);
+    })
+
+
+
+    // user related API
+
+    app.post('/user', async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get('/user', async (req, res) => {
+      const cursor = userCollection.find();
+      const users = await cursor.toArray();
+      res.send(users);
+    })
+
+    app.patch('/user', async(req, res) => {
+      const user = req.body;
+      const filter = {email: user.email}
+      const updateDoc = {
+        $set: {
+          lastLoggedAt: user.lastLoggedAt
+        }
+      }
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+    app.delete('/user/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
       res.send(result);
     })
 
